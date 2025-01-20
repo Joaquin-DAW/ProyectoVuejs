@@ -8,7 +8,7 @@
     </p>
     <p>
       Para facilitar el desarrollo, este proyecto ya viene configruado con
-      Bootstrap, Bootstrap Icons, SASS, router y Pinia
+      Bootstrap, Bootstrap Icons, SASS, router y Pinia.
     </p>
   </div>
   <div class="row">
