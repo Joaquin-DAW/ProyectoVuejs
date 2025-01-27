@@ -39,6 +39,7 @@
           <strong>{{ song.title }}</strong> - {{ song.artist.name }} - {{ song.album.title }}
           <p>Duración: {{ formatDuration(song.duration) }}</p>
           <p><a :href="song.link" target="_blank" class="listen-link">Escuchar completa</a></p>
+          <button @click="addToFavorites(song)">Añadir a favoritos</button>
         </div>
       </li>
     </ul>
@@ -49,12 +50,14 @@
 <script setup>
 import { ref, computed } from "vue";
 import SearchBar from "../components/SearchBar.vue"; // Importa el componente hijo
+import { favorites } from "../state"; // Importa el estado global
 
 const songs = ref([]); // Estado para almacenar la lista de canciones
 const sortAscending = ref(false); // Controla el orden ascendente o descendente
 const minDurationMinutes = ref(null); // Minutos mínimos para el filtro de duración
 const minDurationSeconds = ref(null); // Segundos mínimos para el filtro de duración
 const artistFilter = ref(""); // Filtro por artista
+const favorites = ref([]); // Estado para almacenar las canciones favoritas
 
 // Función para formatear la duración de la canción
 const formatDuration = (duration) => {
@@ -92,6 +95,13 @@ const filteredAndSortedSongs = computed(() => {
 const handleResults = (data) => {
   console.log("Resultados recibidos:", data); // Añadir este log
   songs.value = data; // Actualiza la lista de canciones
+};
+
+// Añadir canción a favoritos
+const addToFavorites = (song) => {
+  if (!favorites.value.some(fav => fav.id === song.id)) {
+    favorites.value.push(song);
+  }
 };
 </script>
 
