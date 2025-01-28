@@ -18,6 +18,7 @@
 import { ref } from "vue";
 
 const searchQuery = ref(""); // Estado reactivo para la barra de búsqueda
+const cache = new Map(); // Cache para almacenar resultados de búsquedas
 
 // Define la función para emitir eventos
 const emit = defineEmits(["results"]);
@@ -25,6 +26,10 @@ const emit = defineEmits(["results"]);
 // Función para realizar la búsqueda
 const searchDeezer = async () => {
   if (searchQuery.value.trim() === "") return; // Evita búsquedas vacías
+  if (cache.has(searchQuery.value)) {
+    emit("results", cache.get(searchQuery.value)); // Usa el cache si existe
+    return;
+  }
   const url = `https://cors-anywhere.herokuapp.com/https://api.deezer.com/search?q=${encodeURIComponent(
     searchQuery.value
   )}`;
@@ -40,6 +45,8 @@ const searchDeezer = async () => {
     console.error(error.message);
   }
 };
+
+
 </script>
 
 <style scoped>

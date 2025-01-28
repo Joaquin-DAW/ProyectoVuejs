@@ -4,7 +4,7 @@
     <p>
       Para que salgan los resultados debes entrar en
       <a href="https://cors-anywhere.herokuapp.com/corsdemo"
-      >https://cors-anywhere.herokuapp.com/corsdemo</a
+        >https://cors-anywhere.herokuapp.com/corsdemo</a
       >
     </p>
     <!-- Componente hijo -->
@@ -20,8 +20,11 @@
       <div class="filter-item">
         <label>
           Duración mínima:
-          <input type="number" v-model="minDurationMinutes" placeholder="Min" class="short-input"/>
-          <input type="number" v-model="minDurationSeconds" placeholder="Seg" class="short-input"/>
+          <div class="duration-inputs">
+            <input type="number" v-model="minDurationMinutes" placeholder="Min" aria-label="Filtrar por duración (minutos)" class="short-input"/>
+            <span>:</span>
+            <input type="number" v-model="minDurationSeconds" placeholder="Seg" aria-label="Filtrar por duración (segundos)" class="short-input"/>
+          </div>
         </label>
       </div>
       <div class="filter-item">
@@ -29,7 +32,7 @@
           Artista:
           <input type="text" v-model="artistFilter" placeholder="Nombre del artista" aria-label="Filtrar por artista" />
         </label>
-    </div>
+      </div>
     </div>
     <!-- Lista de canciones -->
     <ul v-if="filteredAndSortedSongs.length > 0">
@@ -50,14 +53,15 @@
 <script setup>
 import { ref, computed } from "vue";
 import SearchBar from "../components/SearchBar.vue"; // Importa el componente hijo
-import { favorites } from "../state"; // Importa el estado global
+import { useFavoritesStore } from "../stores/favorites"; // Importa la store de favoritos
+
+const favoritesStore = useFavoritesStore();
 
 const songs = ref([]); // Estado para almacenar la lista de canciones
 const sortAscending = ref(false); // Controla el orden ascendente o descendente
 const minDurationMinutes = ref(null); // Minutos mínimos para el filtro de duración
 const minDurationSeconds = ref(null); // Segundos mínimos para el filtro de duración
 const artistFilter = ref(""); // Filtro por artista
-const favorites = ref([]); // Estado para almacenar las canciones favoritas
 
 // Función para formatear la duración de la canción
 const formatDuration = (duration) => {
@@ -99,8 +103,8 @@ const handleResults = (data) => {
 
 // Añadir canción a favoritos
 const addToFavorites = (song) => {
-  if (!favorites.value.some(fav => fav.id === song.id)) {
-    favorites.value.push(song);
+  if (!favoritesStore.isFavorite(song.id)) {
+    favoritesStore.addSong(song);
   }
 };
 </script>

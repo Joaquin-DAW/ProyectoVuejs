@@ -27,16 +27,19 @@
   
   <script setup>
   // Accede a la store
-import { computed, ref } from 'vue';
+import { computed } from 'vue';
 import { useUserStore } from '../stores/email';
 import PiniaComponent from '../components/pinia.vue';
-import { favorites } from "../state"; // Importa el estado global
+import { useFavoritesStore } from "../stores/favorites";// Importa el estado global
 
 // Vincula datos de la store
 const userStore = useUserStore();
 
 const userEmail = computed(() => userStore.email);
 const emailDomain = computed(() => userStore.emailDomain);
+
+const favoritesStore = useFavoritesStore();
+const favorites = computed(() => favoritesStore.favorites);
 
 const formatDuration = (duration) => {
   const minutes = Math.floor(duration / 60);
