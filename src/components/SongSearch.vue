@@ -31,7 +31,8 @@
   
       const searchSongs = async () => {
         const response = await fetch(
-          `https://api.deezer.com/search?q=${searchQuery.value}`
+          `http://localhost:8080/https://api.deezer.com/search?q=${searchQuery.value}`
+          //`https://api.deezer.com/search?q=${searchQuery.value}`
         );
         const data = await response.json();
         songs.value = data.data;
