@@ -42,7 +42,11 @@
           <strong>{{ song.title }}</strong> - {{ song.artist.name }} - {{ song.album.title }}
           <p>Duración: {{ formatDuration(song.duration) }}</p>
           <p><a :href="song.link" target="_blank" class="listen-link">Escuchar completa</a></p>
-          <button @click="addToFavorites(song)">Añadir a favoritos</button>
+          <i 
+            :class="['bi', isFavorite(song.id) ? 'bi-heart-fill' : 'bi-heart']" 
+            @click="toggleFavorite(song)"
+            :style="{ color: isFavorite(song.id) ? 'red' : 'black', cursor: 'pointer' }"
+          ></i>
         </div>
       </li>
     </ul>
@@ -51,10 +55,12 @@
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
+import { useRoute } from "vue-router";
 import SearchBar from "../components/SearchBar.vue"; // Importa el componente hijo
 import { useFavoritesStore } from "../stores/favorites"; // Importa la store de favoritos
 
+const route = useRoute();
 const favoritesStore = useFavoritesStore();
 
 const songs = ref([]); // Estado para almacenar la lista de canciones
@@ -101,10 +107,40 @@ const handleResults = (data) => {
   songs.value = data; // Actualiza la lista de canciones
 };
 
-// Añadir canción a favoritos
-const addToFavorites = (song) => {
-  if (!favoritesStore.isFavorite(song.id)) {
+// Añadir o quitar canción de favoritos
+const toggleFavorite = (song) => {
+  if (favoritesStore.isFavorite(song.id)) {
+    favoritesStore.removeSong(song.id);
+  } else {
     favoritesStore.addSong(song);
+  }
+};
+
+// Verificar si una canción es favorita
+const isFavorite = (id) => favoritesStore.isFavorite(id);
+
+// Realizar búsqueda al montar el componente si hay un parámetro de búsqueda
+onMounted(() => {
+  const query = route.query.q;
+  if (query) {
+    searchDeezer(query);
+  }
+});
+
+// Función para realizar la búsqueda
+const searchDeezer = async (query) => {
+  if (query.trim() === "") return; // Evita búsquedas vacías
+  const url = `https://cors-anywhere.herokuapp.com/https://api.deezer.com/search?q=${encodeURIComponent(query)}`;
+  try {
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error("Error al buscar en Deezer");
+    }
+    const data = await response.json();
+    console.log("Resultados de la búsqueda:", data); // Añadir este log para inspeccionar la respuesta
+    songs.value = data.data; // Actualiza la lista de canciones
+  } catch (error) {
+    console.error(error.message);
   }
 };
 </script>

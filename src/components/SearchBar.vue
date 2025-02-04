@@ -30,9 +30,10 @@ const searchDeezer = async () => {
     emit("results", cache.get(searchQuery.value)); // Usa el cache si existe
     return;
   }
-  const url = `https://cors-anywhere.herokuapp.com/https://api.deezer.com/search?q=${encodeURIComponent(
+  const url = `http://localhost:8080/https://api.deezer.com/search?q=${searchQuery.value}`;
+  /*const url = `https://cors-anywhere.herokuapp.com/https://api.deezer.com/search?q=${encodeURIComponent(
     searchQuery.value
-  )}`;
+  )}`;*/
   try {
     const response = await fetch(url);
     if (!response.ok) {

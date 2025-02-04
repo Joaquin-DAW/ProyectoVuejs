@@ -7,79 +7,68 @@
       del curso.
     </p>
     <p>
-      Para facilitar el desarrollo, este proyecto ya viene configruado con
+      Para facilitar el desarrollo, este proyecto ya viene configurado con
       Bootstrap, Bootstrap Icons, SASS, router y Pinia.
     </p>
-  </div>
-  <div class="row">
-    <div class="col-md-6"><h1>Bootstrap Icons</h1>
-    <p>Bootstrap Icons es una biblioteca de iconos creada por el equipo de Bootstrap. Proporciona una colección de iconos SVG gratuitos y de código abierto que se pueden utilizar fácilmente en proyectos web.</p>
-    <p class="text-bg-light p-3 border" >
-  <i class="bi bi-alarm" style="font-size: 2rem; color: cornflowerblue;"></i> 
-  <code> &lt;i class="bi bi-alarm" style="font-size: 2rem; color: cornflowerblue;"&gt;&lt;/i&gt;</code>
-  <br>
-  <i class="bi bi-battery-half" style="font-size: 2rem; color: darkorange;"></i> 
-  <code> &lt;i class="bi bi-battery-half" style="font-size: 2rem; color: darkorange;"&gt;&lt;/i&gt;</code>
-  <br>
-  <i class="bi bi-cloud-sun" style="font-size: 2rem; color: gold;"></i> 
-  <code> &lt;i class="bi bi-cloud-sun" style="font-size: 2rem; color: gold;"&gt;&lt;/i&gt;</code>
-  <br>
-  <i class="bi bi-emoji-smile" style="font-size: 2rem; color: green;"></i> 
-  <code> &lt;i class="bi bi-emoji-smile" style="font-size: 2rem; color: green;"&gt;&lt;/i&gt;</code>
-      <p>Puedes encontrar la lista completa de iconos en <a href="https://icons.getbootstrap.com/">su web oficial.</a>
-      </p>
-    </p>
-  </div>
-    <div class="col-md-6 sass-example">
-      <h1>SASS</h1>
-      <p>SASS (Syntactically Awesome Stylesheets) es un preprocesador de CSS que permite escribir hojas de estilo de una manera más eficiente y organizada.</p>
-      <p>Este proyecto ya viene configurado con SASS, por lo que puedes empezar a utilizarlo en tus estilos de inmediato.</p>
-      <p class="psass">
-    SASS  es un preprocesador CSS que agrega características como:
-    <ul>
-      <li>Anidación de estilos</li>
-      <li>Variables</li>
-      <li>Mixins</li>
-      <li>Herencia</li>
-    </ul>
-    Todo esto mejora la mantenibilidad del código CSS.
-  </p>
+
+    <!-- Componente SearchBar -->
+    <SearchBar @results="handleSearchResults" />
+
+    <!-- Componente SongCarousel -->
+    <SongCarousel />
+
+    <!-- Grid de canciones destacadas -->
+    <div class="row mt-4">
+      <div class="col-md-4" v-for="song in featuredSongs" :key="song.id">
+        <div class="card mb-4">
+          <img :src="song.album.cover_medium" class="card-img-top" :alt="song.title">
+          <div class="card-body">
+            <h5 class="card-title">{{ song.title }}</h5>
+            <p class="card-text">{{ song.artist.name }}</p>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
-<script setup></script>
+<script setup>
+import { ref, onMounted } from 'vue';
+import SearchBar from '../components/SearchBar.vue';
+import SongCarousel from '../components/SongCarousel.vue';
+
+const featuredSongs = ref([]);
+
+const fetchFeaturedSongs = async () => {
+  const url = `https://cors-anywhere.herokuapp.com/https://api.deezer.com/chart`;
+  try {
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error("Error al obtener las canciones destacadas");
+    }
+    const data = await response.json();
+    featuredSongs.value = data.tracks.data;
+  } catch (error) {
+    console.error(error.message);
+  }
+};
+
+onMounted(fetchFeaturedSongs);
+
+const handleSearchResults = (results) => {
+  console.log("Resultados de búsqueda:", results);
+};
+</script>
 
 <style scoped>
 h1 {
   color: #007bff;
 }
-.sass-example {
-  .psass {
-    font-size: 16px;
-    line-height: 1.5;
-    color: #333;
-    padding: 10px;
-    border: 1px solid #ddd;
-    background-color: #f9f9f9;
-
-    ul {
-      margin-top: 10px;
-      padding-left: 20px;
-      list-style-type: square;
-
-      li {
-        margin-bottom: 5px;
-        color: #555;
-        font-weight: bold;
-
-        &:hover {
-          color: #007bff; 
-          text-decoration: underline;
-        }
-      }
-    }
-  }
+.card {
+  height: 100%;
 }
-
+.card-img-top {
+  height: 200px;
+  object-fit: cover;
+}
 </style>
