@@ -6,7 +6,7 @@
         :key="song.id" 
         :class="['carousel-item', { active: index === 0 }]"
       >
-        <img :src="song.album.cover_medium" class="d-block w-100" :alt="song.title">
+        <img :src="song.album.cover_xl" class="d-block w-100" :alt="song.title">
         <div class="carousel-caption d-none d-md-block">
           <h5>{{ song.title }}</h5>
           <p>{{ song.artist.name }}</p>
@@ -37,7 +37,7 @@ const fetchFeaturedSongs = async () => {
       throw new Error("Error al obtener las canciones destacadas");
     }
     const data = await response.json();
-    featuredSongs.value = data.tracks.data;
+    featuredSongs.value = data.tracks.data.slice(0, 6);
   } catch (error) {
     console.error(error.message);
   }
@@ -48,7 +48,7 @@ onMounted(fetchFeaturedSongs);
 
 <style scoped>
 .carousel-item img {
-  height: 400px;
-  object-fit: cover;
+  height: 600px;
+  object-fit:contain;
 }
 </style>

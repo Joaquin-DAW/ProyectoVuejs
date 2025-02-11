@@ -29,11 +29,26 @@ import Menu from "./components/menu.vue";
 </template>
 
 <style lang="scss">
+
+#app {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: transparent;
+}
+
+main {
+  background-color: transparent;
+  flex: 1;
+}
+
 nav {
   border: 1px solid gray;
 }
+
 $hover-bg-color: #007bff;
 $hover-text-color: #ffffff;
+
 li {
   padding: 0.5rem 1rem;
   cursor: pointer;

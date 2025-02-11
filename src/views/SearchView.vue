@@ -7,13 +7,15 @@
         >https://cors-anywhere.herokuapp.com/corsdemo</a
       >
     </p>
-    <!-- Componente hijo -->
+    <!-- Componente de búsqueda -->
     <SearchBar @results="handleResults" />
     <hr />
+
+    <!-- Filtros -->
     <div class="filters">
       <div class="filter-item">
         <label>
-          <input type="checkbox" v-model="sortAscending" aria-label="Ordenar ascendente" />
+          <input type="checkbox" v-model="sortAscending" />
           Ordenar por nombre (ascendente)
         </label>
       </div>
@@ -21,20 +23,21 @@
         <label>
           Duración mínima:
           <div class="duration-inputs">
-            <input type="number" v-model="minDurationMinutes" placeholder="Min" aria-label="Filtrar por duración (minutos)" class="short-input"/>
+            <input type="number" v-model="minDurationMinutes" placeholder="Min" class="short-input"/>
             <span>:</span>
-            <input type="number" v-model="minDurationSeconds" placeholder="Seg" aria-label="Filtrar por duración (segundos)" class="short-input"/>
+            <input type="number" v-model="minDurationSeconds" placeholder="Seg" class="short-input"/>
           </div>
         </label>
       </div>
       <div class="filter-item">
         <label>
           Artista:
-          <input type="text" v-model="artistFilter" placeholder="Nombre del artista" aria-label="Filtrar por artista" />
+          <input type="text" v-model="artistFilter" placeholder="Nombre del artista" />
         </label>
       </div>
     </div>
-    <!-- Lista de canciones -->
+
+    <!-- Lista de resultados -->
     <ul v-if="filteredAndSortedSongs.length > 0">
       <li v-for="song in filteredAndSortedSongs" :key="song.id" class="song-item">
         <img :src="song.album.cover_medium" alt="Portada del álbum" class="album-cover" />
@@ -55,94 +58,103 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, watch, computed, onMounted } from "vue";
 import { useRoute } from "vue-router";
-import SearchBar from "../components/SearchBar.vue"; // Importa el componente hijo
-import { useFavoritesStore } from "../stores/favorites"; // Importa la store de favoritos
+import SearchBar from "../components/SearchBar.vue";
+import { useFavoritesStore } from "../stores/favorites";
 
 const route = useRoute();
+const searchQuery = ref(route.query.q || ""); // Almacena el término de búsqueda
 const favoritesStore = useFavoritesStore();
 
-const songs = ref([]); // Estado para almacenar la lista de canciones
-const sortAscending = ref(false); // Controla el orden ascendente o descendente
-const minDurationMinutes = ref(null); // Minutos mínimos para el filtro de duración
-const minDurationSeconds = ref(null); // Segundos mínimos para el filtro de duración
-const artistFilter = ref(""); // Filtro por artista
+const songs = ref([]); // Lista de canciones obtenidas
+const cache = new Map(); // Cache para evitar búsquedas repetidas
 
-// Función para formatear la duración de la canción
+const sortAscending = ref(false);
+const minDurationMinutes = ref(null);
+const minDurationSeconds = ref(null);
+const artistFilter = ref("");
+
+// Formato de duración en minutos y segundos
 const formatDuration = (duration) => {
   const minutes = Math.floor(duration / 60);
   const seconds = duration % 60;
   return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
 };
 
-// Lista filtrada y ordenada
+// Filtrado y ordenamiento de resultados
 const filteredAndSortedSongs = computed(() => {
   let result = [...songs.value];
 
-  // Filtrar por duración mínima
-  const minDuration = minDurationMinutes.value * 60 + minDurationSeconds.value;
+  // Calcular duración mínima en segundos
+  const minDuration = (parseInt(minDurationMinutes.value) || 0) * 60 + (parseInt(minDurationSeconds.value) || 0);
+  
   if (minDuration > 0) {
     result = result.filter(song => song.duration && song.duration >= minDuration);
   }
 
-  // Filtrar por artista
   if (artistFilter.value.trim() !== "") {
-    result = result.filter(song => song.artist.name.toLowerCase().includes(artistFilter.value.trim().toLowerCase()));
-  }
-  
-  // Ordenar por nombre
-  if (sortAscending.value) {
-    result.sort((a, b) => a.title.localeCompare(b.title));
-  } else {
-    result.sort((a, b) => b.title.localeCompare(a.title));
+    result = result.filter(song => 
+      song.artist.name.toLowerCase().includes(artistFilter.value.trim().toLowerCase())
+    );
   }
 
-  return result;
+  return result.sort((a, b) => 
+    sortAscending.value ? a.title.localeCompare(b.title) : b.title.localeCompare(a.title)
+  );
 });
 
-// Maneja los resultados emitidos por el componente hijo
+// Manejar resultados emitidos por el SearchBar
 const handleResults = (data) => {
-  console.log("Resultados recibidos:", data); // Añadir este log
-  songs.value = data; // Actualiza la lista de canciones
+  console.log("Resultados recibidos:", data);
+  songs.value = data;
 };
 
-// Añadir o quitar canción de favoritos
+// Añadir o quitar de favoritos
 const toggleFavorite = (song) => {
-  if (favoritesStore.isFavorite(song.id)) {
-    favoritesStore.removeSong(song.id);
-  } else {
-    favoritesStore.addSong(song);
-  }
+  favoritesStore.isFavorite(song.id) 
+    ? favoritesStore.removeSong(song.id) 
+    : favoritesStore.addSong(song);
 };
 
-// Verificar si una canción es favorita
 const isFavorite = (id) => favoritesStore.isFavorite(id);
 
-// Realizar búsqueda al montar el componente si hay un parámetro de búsqueda
-onMounted(() => {
-  const query = route.query.q;
-  if (query) {
-    searchDeezer(query);
-  }
-});
-
-// Función para realizar la búsqueda
+// Función para buscar en Deezer
 const searchDeezer = async (query) => {
-  if (query.trim() === "") return; // Evita búsquedas vacías
+  if (!query.trim()) return; // Evita búsquedas vacías
+
+  if (cache.has(query)) {
+    songs.value = cache.get(query); // Usa cache si la búsqueda ya se realizó antes
+    return;
+  }
+
   const url = `https://cors-anywhere.herokuapp.com/https://api.deezer.com/search?q=${encodeURIComponent(query)}`;
   try {
     const response = await fetch(url);
-    if (!response.ok) {
-      throw new Error("Error al buscar en Deezer");
-    }
+    if (!response.ok) throw new Error("Error al buscar en Deezer");
+
     const data = await response.json();
-    console.log("Resultados de la búsqueda:", data); // Añadir este log para inspeccionar la respuesta
-    songs.value = data.data; // Actualiza la lista de canciones
+    console.log("Resultados de la búsqueda:", data);
+
+    cache.set(query, data.data); // Guarda en cache
+    songs.value = data.data;
   } catch (error) {
     console.error(error.message);
   }
 };
+
+// Ejecutar búsqueda al montar el componente si hay un término en la URL
+onMounted(() => {
+  if (searchQuery.value) {
+    searchDeezer(searchQuery.value);
+  }
+});
+
+// Detectar cambios en la URL y hacer una nueva búsqueda
+watch(() => route.query.q, (newQuery) => {
+  searchQuery.value = newQuery;
+  searchDeezer(newQuery);
+});
 </script>
 
 <style scoped>
@@ -152,14 +164,14 @@ h1 {
 .filters {
   display: flex;
   flex-wrap: wrap;
-  gap: 20px; /* Espaciado entre los filtros */
+  gap: 20px;
   margin-bottom: 20px;
 }
 .filter-item {
-  flex: 1 1 200px; /* Ajusta el tamaño mínimo de los filtros */
+  flex: 1 1 200px;
 }
 .short-input {
-  width: 60px; /* Ajusta el ancho de los campos de entrada */
+  width: 60px;
 }
 .song-item {
   display: flex;
@@ -183,15 +195,15 @@ h1 {
   margin: 5px 0;
 }
 .listen-link {
-  color: #007bff; /* Color del enlace */
-  text-decoration: none; /* Quitar subrayado */
+  color: #007bff;
+  text-decoration: none;
 }
 .listen-link:hover {
-  color: #0056b3; /* Color del enlace al pasar el ratón */
-  text-decoration: underline; /* Subrayado al pasar el ratón */
+  color: #0056b3;
+  text-decoration: underline;
 }
 li:hover {
   background-color: blue;
-  color: white; /* Opcional: para cambiar el color del texto también */
+  color: white;
 }
 </style>

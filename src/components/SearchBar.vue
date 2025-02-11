@@ -16,9 +16,11 @@
 
 <script setup>
 import { ref } from "vue";
+import { useRouter } from "vue-router";
 
 const searchQuery = ref(""); // Estado reactivo para la barra de búsqueda
 const cache = new Map(); // Cache para almacenar resultados de búsquedas
+const router = useRouter();
 
 // Define la función para emitir eventos
 const emit = defineEmits(["results"]);
@@ -47,6 +49,11 @@ const searchDeezer = async () => {
   }
 };
 
+// Función para emitir el evento de búsqueda y redirigir a SearchView
+const emitSearch = () => {
+  if (searchQuery.value.trim() === "") return; // Evita búsquedas vacías
+  router.push({ name: 'Buscador', query: { q: searchQuery.value } });
+};
 
 </script>
 
@@ -58,11 +65,11 @@ const searchDeezer = async () => {
 }
 .search-input {
   width: 90%;
-  max-width: 600px; /* Opcional: limitar el ancho máximo */
+  max-width: 75%;
   display: flex;
   align-items: center;
   border: 1px solid #ccc;
-  border-radius: 5px;
+  border-radius: 25px;
   background-color: #fff;
   padding: 0;
 }
@@ -72,7 +79,7 @@ const searchDeezer = async () => {
   outline: none;
   padding: 10px;
   font-size: 16px;
-  border-radius: 5px 0 0 5px;
+  border-radius: 25px 0 0 25px;
 }
 .search-input button {
   border: none;
