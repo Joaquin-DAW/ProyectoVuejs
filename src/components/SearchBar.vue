@@ -4,10 +4,10 @@
       <input
         type="text"
         v-model="searchQuery"
-        @keyup.enter="searchDeezer"
+        @keyup.enter="emitSearch"
         placeholder="Buscar en Deezer"
       />
-      <button @click="searchDeezer">
+      <button @click="emitSearch">
         <i class="bi bi-search"></i> <!-- Ícono de búsqueda de Bootstrap -->
       </button>
     </div>
@@ -19,42 +19,17 @@ import { ref } from "vue";
 import { useRouter } from "vue-router";
 
 const searchQuery = ref(""); // Estado reactivo para la barra de búsqueda
-const cache = new Map(); // Cache para almacenar resultados de búsquedas
 const router = useRouter();
 
 // Define la función para emitir eventos
-const emit = defineEmits(["results"]);
-
-// Función para realizar la búsqueda
-const searchDeezer = async () => {
-  if (searchQuery.value.trim() === "") return; // Evita búsquedas vacías
-  if (cache.has(searchQuery.value)) {
-    emit("results", cache.get(searchQuery.value)); // Usa el cache si existe
-    return;
-  }
-  const url = `http://localhost:8080/https://api.deezer.com/search?q=${searchQuery.value}`;
-  /*const url = `https://cors-anywhere.herokuapp.com/https://api.deezer.com/search?q=${encodeURIComponent(
-    searchQuery.value
-  )}`;*/
-  try {
-    const response = await fetch(url);
-    if (!response.ok) {
-      throw new Error("Error al buscar en Deezer");
-    }
-    const data = await response.json();
-    console.log("Resultados de la búsqueda:", data.data); // Añadir este log
-    emit("results", data.data); // Emitimos los resultados al componente padre
-  } catch (error) {
-    console.error(error.message);
-  }
-};
+const emit = defineEmits(["search"]);
 
 // Función para emitir el evento de búsqueda y redirigir a SearchView
 const emitSearch = () => {
   if (searchQuery.value.trim() === "") return; // Evita búsquedas vacías
+  emit("search", searchQuery.value); // Emitir el término de búsqueda
   router.push({ name: 'Buscador', query: { q: searchQuery.value } });
 };
-
 </script>
 
 <style scoped>

@@ -8,8 +8,10 @@
       >
         <img :src="song.album.cover_xl" class="d-block w-100" :alt="song.title">
         <div class="carousel-caption d-none d-md-block">
-          <h5>{{ song.title }}</h5>
-          <p>{{ song.artist.name }}</p>
+          <div class="caption-background">
+            <h5>{{ song.title }}</h5>
+            <p>{{ song.artist.name }}</p>
+          </div>
         </div>
       </div>
     </div>
@@ -49,6 +51,35 @@ onMounted(fetchFeaturedSongs);
 <style scoped>
 .carousel-item img {
   height: 600px;
-  object-fit:contain;
+  object-fit: contain;
+}
+
+.carousel-caption {
+  display: block;
+  text-align: center; /* Centra el texto */
+}
+
+.caption-background {
+  background-color: rgba(0, 0, 0, 0.75); /* Fondo gris semitransparente */
+  display: inline-block; /* Ajusta el tamaño del fondo al contenido */
+  padding: 10px 20px; /* Añade padding alrededor del texto */
+  border-radius: 5px; /* Bordes redondeados */
+  margin: 5px 0; /* Añade un poco de margen entre el título y el artista */
+}
+
+.caption-background h5,
+.caption-background p {
+  margin: 0; /* Elimina el margen por defecto */
+}
+
+.caption-background h5 {
+  font-size: 1.5rem; /* Ajusta el tamaño del título */
+  font-weight: bold;
+  margin-bottom: 5px; /* Añade espacio entre el título y el nombre del artista */
+}
+
+.caption-background p {
+  font-size: 1.1rem; /* Ajusta el tamaño del nombre del artista */
+  font-weight: normal;
 }
 </style>
