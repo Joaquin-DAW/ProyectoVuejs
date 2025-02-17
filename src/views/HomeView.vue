@@ -59,10 +59,6 @@ onMounted(fetchFeaturedSongs);
 </script>
 
 <style scoped>
-body {
-  margin: 0;
-  padding: 0;
-}
 .home-container {
   padding: 20px;
   border-radius: 10px;

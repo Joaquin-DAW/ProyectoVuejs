@@ -69,11 +69,10 @@ onMounted(() => {
   flex: 1;
   display: flex;
   flex-direction: column;
-  background-color: transparent;
+  background: linear-gradient(135deg, #1e1e2f, #63a0d8)
 }
 
 main {
-  background-color: transparent;
   flex: 1;
 }
 
