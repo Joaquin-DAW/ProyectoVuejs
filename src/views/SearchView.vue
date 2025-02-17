@@ -45,6 +45,7 @@
         <div class="song-info">
           <strong>{{ song.title }}</strong> - {{ song.artist.name }} - {{ song.album.title }}
           <p>Duración: {{ formatDuration(song.duration) }}</p>
+          <button @click="$emit('play', song)">▶ Reproducir</button>
           <p><a :href="song.link" target="_blank" class="listen-link">Escuchar completa</a></p>
           <i 
             :class="['bi', isFavorite(song.id) ? 'bi-heart-fill' : 'bi-heart']" 
@@ -94,128 +95,144 @@ import ArtistCard from "../components/ArtistCard.vue";
 import { useFavoritesStore } from "../stores/favorites";
 
 const route = useRoute();
-const searchQuery = ref(route.query.q || ""); // Almacena el término de búsqueda
+const searchQuery = ref(route.query.q || ""); // Capturar el término de búsqueda desde la URL
 const favoritesStore = useFavoritesStore();
 
-const songs = ref([]); // Lista de canciones obtenidas
-const albums = ref([]); // Lista de álbumes obtenidos
-const artists = ref([]); // Lista de artistas obtenidos
-const cache = new Map(); // Cache para evitar búsquedas repetidas
+const songs = ref([]);
+const albums = ref([]);
+const artists = ref([]);
+const cache = new Map();
 
 const sortAscending = ref(false);
 const minDurationMinutes = ref(null);
 const minDurationSeconds = ref(null);
 const artistFilter = ref("");
 
-const limit = ref(5); // Límite inicial de resultados a mostrar
+const limit = ref(5); 
 
-// Formato de duración en minutos y segundos
+// **Función para formatear la duración en minutos y segundos**
 const formatDuration = (duration) => {
   const minutes = Math.floor(duration / 60);
   const seconds = duration % 60;
-  return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+  return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
 };
 
-// Filtrado y ordenamiento de resultados
+// **Filtrado y ordenamiento de canciones**
 const filteredAndSortedSongs = computed(() => {
   let result = [...songs.value];
 
-  // Calcular duración mínima en segundos
   const minDuration = (parseInt(minDurationMinutes.value) || 0) * 60 + (parseInt(minDurationSeconds.value) || 0);
-  
+
   if (minDuration > 0) {
     result = result.filter(song => song.duration && song.duration >= minDuration);
   }
 
   if (artistFilter.value.trim() !== "") {
-    result = result.filter(song => 
+    result = result.filter(song =>
       song.artist.name.toLowerCase().includes(artistFilter.value.trim().toLowerCase())
     );
   }
 
-  return result.sort((a, b) => 
+  return result.sort((a, b) =>
     sortAscending.value ? a.title.localeCompare(b.title) : b.title.localeCompare(a.title)
   );
 });
 
-// Limitar los resultados a mostrar
+// **Limitar los resultados a mostrar**
 const limitedSongs = computed(() => filteredAndSortedSongs.value.slice(0, limit.value));
 const limitedAlbums = computed(() => albums.value.slice(0, limit.value));
 const limitedArtists = computed(() => artists.value.slice(0, limit.value));
 
-// Manejar resultados emitidos por el SearchBar
-const handleResults = (data) => {
-  console.log("Resultados recibidos:", data);
-  songs.value = data;
-};
+let searchTimeout = null; // Para debounce
 
-// Añadir o quitar de favoritos
-const toggleFavorite = (song) => {
-  favoritesStore.isFavorite(song.id) 
-    ? favoritesStore.removeSong(song.id) 
-    : favoritesStore.addSong(song);
-};
-
-const isFavorite = (id) => favoritesStore.isFavorite(id);
-
-// Función para buscar en Deezer
+// **Función para buscar en Deezer**
 const searchDeezer = async (query) => {
-  if (!query.trim()) return; // Evita búsquedas vacías
+  if (!query.trim()) return;
 
-  if (cache.has(query)) {
-    const cachedData = cache.get(query);
-    songs.value = cachedData.songs;
-    albums.value = cachedData.albums;
-    artists.value = cachedData.artists;
-    return;
-  }
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(async () => {
+    if (cache.has(query)) {
+      const cachedData = cache.get(query);
+      songs.value = cachedData.songs;
+      albums.value = cachedData.albums;
+      artists.value = cachedData.artists;
+      return;
+    }
 
-  const songUrl = `https://cors-anywhere.herokuapp.com/https://api.deezer.com/search?q=${encodeURIComponent(query)}`;
-  const albumUrl = `https://cors-anywhere.herokuapp.com/https://api.deezer.com/search/album?q=${encodeURIComponent(query)}`;
-  const artistUrl = `https://cors-anywhere.herokuapp.com/https://api.deezer.com/search/artist?q=${encodeURIComponent(query)}`;
-  try {
-    const [songResponse, albumResponse, artistResponse] = await Promise.all([fetch(songUrl), fetch(albumUrl), fetch(artistUrl)]);
-    if (!songResponse.ok || !albumResponse.ok || !artistResponse.ok) throw new Error("Error al buscar en Deezer");
+    const songUrl = `http://localhost:8080/https://api.deezer.com/search?q=${encodeURIComponent(query)}`;
+    const albumUrl = `http://localhost:8080/https://api.deezer.com/search/album?q=${encodeURIComponent(query)}`;
+    const artistUrl = `http://localhost:8080/https://api.deezer.com/search/artist?q=${encodeURIComponent(query)}`;
 
-    const songData = await songResponse.json();
-    const albumData = await albumResponse.json();
-    const artistData = await artistResponse.json();
-    console.log("Resultados de la búsqueda:", { songs: songData, albums: albumData, artists: artistData });
+    try {
+      const [songResponse, albumResponse, artistResponse] = await Promise.all([
+        fetch(songUrl, {
+          headers: {
+            "origin": "localhost",
+            "x-requested-with": "XMLHttpRequest",
+          },
+        }),
+        fetch(albumUrl, {
+          headers: {
+            "origin": "localhost",
+            "x-requested-with": "XMLHttpRequest",
+          },
+        }),
+        fetch(artistUrl, {
+          headers: {
+            "origin": "localhost",
+            "x-requested-with": "XMLHttpRequest",
+          },
+        }),
+      ]);
 
-    cache.set(query, { songs: songData.data, albums: albumData.data, artists: artistData.data }); // Guarda en cache
-    songs.value = songData.data;
-    albums.value = albumData.data;
-    artists.value = artistData.data;
-  } catch (error) {
-    console.error(error.message);
-  }
+      if (!songResponse.ok || !albumResponse.ok || !artistResponse.ok) {
+        throw new Error("Error al buscar en Deezer");
+      }
+
+      const songData = await songResponse.json();
+      const albumData = await albumResponse.json();
+      const artistData = await artistResponse.json();
+      console.log("Resultados de la búsqueda:", { songs: songData, albums: albumData, artists: artistData });
+
+      cache.set(query, { songs: songData.data, albums: albumData.data, artists: artistData.data });
+
+      songs.value = songData.data || [];
+      albums.value = albumData.data || [];
+      artists.value = artistData.data || [];
+    } catch (error) {
+      console.error("Error en la búsqueda:", error.message);
+    }
+  }, 500); // **Debounce de 500ms**
 };
 
-// Función para cargar más resultados
-const loadMoreSongs = () => {
-  limit.value += 5;
-};
+// **Manejar cambios en la URL y hacer una nueva búsqueda**
+watch(() => route.query.q, (newQuery) => {
+  searchQuery.value = newQuery;
+  searchDeezer(newQuery);
+});
 
-const loadMoreAlbums = () => {
-  limit.value += 5;
-};
-
-const loadMoreArtists = () => {
-  limit.value += 5;
-};
-
-// Ejecutar búsqueda al montar el componente si hay un término en la URL
+// **Ejecutar búsqueda al montar el componente si hay un término en la URL**
 onMounted(() => {
   if (searchQuery.value) {
     searchDeezer(searchQuery.value);
   }
 });
 
-// Detectar cambios en la URL y hacer una nueva búsqueda
-watch(() => route.query.q, (newQuery) => {
-  searchQuery.value = newQuery;
-  searchDeezer(newQuery);
-});
+// **Funciones para cargar más resultados**
+const loadMoreSongs = () => { limit.value += 5; };
+const loadMoreAlbums = () => { limit.value += 5; };
+const loadMoreArtists = () => { limit.value += 5; };
+
+// **Función para alternar favoritos**
+const toggleFavorite = (song) => {
+  favoritesStore.isFavorite(song.id)
+    ? favoritesStore.removeSong(song.id)
+    : favoritesStore.addSong(song);
+};
+
+// **Función para verificar si una canción es favorita**
+const isFavorite = (id) => favoritesStore.isFavorite(id);
+
 </script>
 
 <style scoped>

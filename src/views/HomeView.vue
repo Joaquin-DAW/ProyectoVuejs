@@ -5,7 +5,7 @@
     <SearchBar @results="handleSearchResults" />
 
     <!-- Componente SongCarousel -->
-    <SongCarousel />
+    <SongCarousel :featuredSongs="featuredSongs"/>
 
     <!-- Grid de canciones destacadas -->
     <div v-if="featuredSongs.length > 0" class="row mt-4">
@@ -19,12 +19,15 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import SearchBar from '../components/SearchBar.vue';
 import SongCarousel from '../components/SongCarousel.vue';
 import SongCard from '../components/SongCard.vue';
 
+const router = useRouter();
 const featuredSongs = ref([]);
-const apiUrl = `https://cors-anywhere.herokuapp.com/https://api.deezer.com/chart`;
+const apiUrl = `http://localhost:8080/https://api.deezer.com/chart`;
+//`https://cors-anywhere.herokuapp.com/https://api.deezer.com/chart`;
 
 const fetchFeaturedSongs = async () => {
   try {
@@ -42,8 +45,9 @@ const fetchFeaturedSongs = async () => {
   }
 };
 
-const handleSearchResults = (results) => {
-  console.log("Resultados recibidos en Home:", results);
+const handleSearchResults = (query) => {
+  if (query.trim() === "") return;
+  router.push({ name: 'Buscador', query: { q: query } });
 };
 
 const handleAddToPlaylist = (song) => {
@@ -56,7 +60,6 @@ onMounted(fetchFeaturedSongs);
 
 <style scoped>
 body {
-  background-color: #0a2fff;
   margin: 0;
   padding: 0;
 }
@@ -66,6 +69,11 @@ body {
 }
 .card {
   height: 100%;
+  background-color: #f8f9fa;
+  transition: transform 0.2s ease-in-out;
+}
+.card:hover {
+  transform: scale(1.05);
 }
 .card-img-top {
   height: 200px;
@@ -73,5 +81,6 @@ body {
 }
 .text-muted {
   font-size: 1.2em;
+  color: #555;
 }
 </style>

@@ -26,7 +26,7 @@ const emit = defineEmits(["search"]);
 
 // Función para emitir el evento de búsqueda y redirigir a SearchView
 const emitSearch = () => {
-  if (searchQuery.value.trim() === "") return; // Evita búsquedas vacías
+  if (searchQuery.value.trim() == "") return; // Evita búsquedas vacías
   emit("search", searchQuery.value); // Emitir el término de búsqueda
   router.push({ name: 'Buscador', query: { q: searchQuery.value } });
 };

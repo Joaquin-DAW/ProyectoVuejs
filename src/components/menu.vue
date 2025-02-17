@@ -29,10 +29,15 @@
         </ul>
 
         <!-- Sección de usuario -->
-        <div v-if="user" class="d-flex align-items-center">
-          <img :src="user.avatar" alt="Avatar" class="rounded-circle me-2" width="40" height="40">
-          <span class="me-3 user-name">{{ user.name }}</span>
-          <button @click="logout" class="btn btn-danger btn-sm">Logout</button>
+        <div class="user-section">
+          <template v-if="user">
+            <img :src="user.avatar" alt="Avatar" class="user-avatar">
+            <span class="user-name">{{ user.name }}</span>
+            <button @click="logout" class="btn btn-danger btn-sm">Logout</button>
+          </template>
+          <template v-else>
+            <button @click="login" class="btn btn-primary btn-sm">Iniciar sesión</button>
+          </template>
         </div>
       </div>
     </div>
@@ -40,26 +45,55 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
 
 // Simulación de usuario logueado (esto podría venir de Vuex, Pinia o Firebase)
-const user = ref({
-  name: "Fermín Trujillo",
-  avatar: "https://i.pravatar.cc/40"
-})
+const user = ref(null);
+
+// **Simulación de login/logout con localStorage**
+const login = () => {
+  user.value = {
+    name: "Jane Doe",
+    avatar: "https://i.pravatar.cc/40"
+  };
+  localStorage.setItem("user", JSON.stringify(user.value));
+};
 
 const logout = () => {
   console.log("Cerrando sesión...")
   user.value = null // Aquí pondrías la lógica real de logout
-}
+  localStorage.removeItem("user");
+};
+
+// **Cargar usuario desde localStorage al iniciar**
+onMounted(() => {
+  const savedUser = localStorage.getItem("user");
+  if (savedUser) {
+    user.value = JSON.parse(savedUser);
+  }
+});
 </script>
 
 <style scoped>
 .navbar-brand {
   font-weight: bold;
 }
+
+.user-section {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.user-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}
+
 .user-name {
+  font-weight: bold;
   color: black; /* Cambia el color del nombre del usuario a negro */
 }
 </style>
