@@ -12,10 +12,7 @@
 import { defineProps } from 'vue';
 
 const props = defineProps({
-  album: {
-    type: Object,
-    required: true
-  }
+  album: { type: Object,required: true }
 });
 </script>
 
@@ -24,6 +21,10 @@ const props = defineProps({
   width: 100%;
   max-width: 300px;
   margin: 10px;
+  transition: transform 0.2s ease-in-out;
+}
+.album-card:hover {
+  transform: scale(1.05);
 }
 .card-img-top {
   height: 200px;
@@ -32,9 +33,11 @@ const props = defineProps({
 .card-title {
   font-size: 1.2rem;
   font-weight: bold;
+  text-align: center;
 }
 .card-text {
   font-size: 1rem;
   color: #555;
+  text-align: center;
 }
 </style>

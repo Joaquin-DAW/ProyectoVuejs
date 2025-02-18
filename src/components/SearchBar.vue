@@ -15,11 +15,17 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
-import { useRouter } from "vue-router";
+import { ref, watch } from "vue";
+import { useRouter, useRoute } from "vue-router";
 
 const searchQuery = ref(""); // Estado reactivo para la barra de búsqueda
 const router = useRouter();
+const route = useRoute();
+
+// Sincroniza el input con la URL en SearchView.vue
+watch(() => route.query.q, (newQuery) => {
+  searchQuery.value = newQuery || "";
+}, { immediate: true });
 
 // Define la función para emitir eventos
 const emit = defineEmits(["search"]);

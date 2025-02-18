@@ -7,7 +7,7 @@
       @keyup.enter="searchSongs"
     />
     
-    <div v-for="song in songs" :key="song.id" class="song-item">
+    <div class="song-item">
       <div>
         <h3>{{ song.title }}</h3>
         <p>{{ song.artist.name }}</p>

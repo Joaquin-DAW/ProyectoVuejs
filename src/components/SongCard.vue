@@ -4,7 +4,13 @@
     <div class="card-body">
       <h5 class="card-title">{{ song.title }}</h5>
       <p class="card-text">{{ song.artist.name }}</p>
-      <button @click="addToPlaylist" class="btn btn-primary">Agregar a Playlist</button>
+      <button 
+        v-if="showAddButton" 
+        @click="addToPlaylist" 
+        class="btn btn-primary w-100"
+      >
+       Agregar a Playlist
+      </button>
     </div>
   </div>
 </template>
@@ -13,10 +19,8 @@
 import { defineProps, defineEmits } from 'vue';
 
 const props = defineProps({
-  song: {
-    type: Object,
-    required: true
-  }
+  song: { type: Object, required: true },
+  showAddButton: { type: Boolean, default: true }
 });
 
 const emit = defineEmits(['add-to-playlist']);
@@ -31,9 +35,19 @@ const addToPlaylist = () => {
   width: 100%;
   max-width: 300px;
   margin: 10px;
+  transition: transform 0.2s ease-in-out;
 }
+
+.song-card:hover {
+  transform: scale(1.05);
+}
+
 .card-img-top {
   height: 300px;
   object-fit: cover;
+}
+
+.card-body {
+  text-align: center;
 }
 </style>
