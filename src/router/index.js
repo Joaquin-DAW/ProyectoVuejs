@@ -3,6 +3,8 @@ import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue';
 import PlaylistsView from '../views/PlaylistsView.vue';
 import SearchView from '../views/SearchView.vue';
+import InfoView from '@/views/InfoView.vue';
+
 
 const routes = [
   {
@@ -20,6 +22,11 @@ const routes = [
     name: 'Buscador',
     component: SearchView,
   },
+  {
+    path: "/info/:type/:id", 
+    name: "InfoView",
+    component: InfoView,
+  }
 ];
 
 const router = createRouter({

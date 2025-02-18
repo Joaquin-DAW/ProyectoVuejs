@@ -6,20 +6,25 @@
       <!-- Información de la canción -->
       <div class="song-info">
         <strong>{{ song.title }}</strong> - {{ song.artist.name }} - {{ song.album.title }}
-        <p>⏱ {{ formatDuration(song.duration) }}</p>
+        <p> {{ formatDuration(song.duration) }}</p>
       </div>
   
       <!-- Botón para reproducir -->
       <button @click="$emit('play', song)" class="btn btn-success">▶ Reproducir</button>
   
       <!-- Enlace para escuchar la canción completa -->
-      <a :href="song.link" target="_blank" class="listen-link">🎧 Escuchar completa</a>
+      <a :href="song.link" target="_blank" class="listen-link">🎧 Escuchar en Deezer</a>
   
       <!-- Icono de favoritos -->
       <i 
         :class="['bi', isFavorite(song.id) ? 'bi-heart-fill' : 'bi-heart']" 
         @click="toggleFavorite(song)"
-        :style="{ color: isFavorite(song.id) ? 'red' : 'white', cursor: 'pointer' }"
+        :style="{
+          color: isFavorite(song.id) ? 'red' : 'black', 
+          cursor: 'pointer',
+          fontSize: '20px',
+          textShadow: isFavorite(song.id) ? 'none' : '0px 0px 3px rgba(0, 0, 0, 0.5)'
+        }"
       ></i>
     </li>
   </template>
