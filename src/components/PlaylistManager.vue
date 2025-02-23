@@ -10,6 +10,7 @@
         <PlaylistItem 
           :song="song"
           :index="index"
+          @play="$emit('play', song)" 
           @remove="removeFromPlaylist"
         />
       </li>
@@ -24,6 +25,8 @@ import PlaylistItem from './PlaylistItem.vue';
 
 const favoritesStore = useFavoritesStore();
 const favorites = computed(() => favoritesStore.favorites);
+
+const emit = defineEmits(["play"]); // Declaramos el evento "play"
 
 // Función para eliminar canción de la playlist
 const removeFromPlaylist = (id) => {

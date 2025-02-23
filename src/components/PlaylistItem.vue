@@ -10,6 +10,9 @@
       <a :href="song.link" target="_blank" class="listen-link">🎧 Escuchar en Deezer</a>
     </div>
 
+    <!-- Botón para reproducir -->
+    <button @click="playSong" class="btn btn-success">▶ Reproducir</button>
+
     <!-- Botón para eliminar -->
     <button @click="$emit('remove', song.id)" class="btn btn-danger">❌ Eliminar</button>
   </div>
@@ -22,9 +25,14 @@ const props = defineProps({
   song: { type: Object, required: true }
 });
 
-// Emitir evento al hacer clic en eliminar
-defineEmits(['remove']);
+const emit = defineEmits(["play", "remove"]); // Declarar eventos emitidos
 
+// **Emitir evento de reproducción**
+const playSong = () => {
+  emit("play", props.song);  // Emitir el evento "play"
+};
+
+// **Función para formatear duración**
 const formatDuration = (duration) => {
   const minutes = Math.floor(duration / 60);
   const seconds = duration % 60;
@@ -36,6 +44,8 @@ const formatDuration = (duration) => {
 .playlist-item {
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  width: 100%;
   gap: 15px;
   padding: 10px;
   border-radius: 8px;

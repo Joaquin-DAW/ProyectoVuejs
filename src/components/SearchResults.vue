@@ -4,12 +4,12 @@
       <div v-if="songs.length > 0">
         <h2>Canciones</h2>
         <ul class="result-list">
+          <li v-for="song in songs" :key="song.id" class="song-item">
           <SearchSongItem 
-            v-for="song in songs" 
-            :key="song.id" 
             :song="song"
             @play="$emit('play', song)"
           />
+        </li>
         </ul>
       </div>
   
@@ -18,7 +18,9 @@
         <h2>Álbumes</h2>
         <div class="row">
           <div class="col-md-4" v-for="album in albums" :key="album.id">
-            <AlbumCard :album="album" />
+            <router-link :to="{ name: 'InfoView', params: { type: 'album', id: album.id } }">
+              <AlbumCard :album="album" />
+            </router-link>
           </div>
         </div>
       </div>
@@ -28,7 +30,9 @@
         <h2>Artistas</h2>
         <div class="row">
           <div class="col-md-4" v-for="artist in artists" :key="artist.id">
-            <ArtistCard :artist="artist" />
+            <router-link :to="{ name: 'InfoView', params: { type: 'artist', id: artist.id } }">
+              <ArtistCard :artist="artist" />
+            </router-link>
           </div>
         </div>
       </div>
@@ -58,12 +62,30 @@
   </script>
   
   <style scoped>
-  h2{
-    color: white;
-  }
-  .result-list {
-    list-style: none;
-    padding: 0;
-  }
+ .result-list {
+  list-style: none;
+  padding: 0;
+}
+
+.song-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background-color: rgba(255, 255, 255, 0.1);
+  transition: background-color 0.3s ease-in-out;
+}
+
+.song-item:hover {
+  background-color: rgba(0, 0, 255, 0.8);
+  color: white;
+}
+
+h2 {
+  color: white;
+  margin-top: 20px;
+}
   </style>
   

@@ -26,6 +26,7 @@ const routes = [
     path: "/info/:type/:id", 
     name: "InfoView",
     component: InfoView,
+    props: true 
   }
 ];
 

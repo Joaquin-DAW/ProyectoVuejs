@@ -2,10 +2,10 @@
   <div>
     <h1>Búsqueda de canciones, álbumes y artistas en Deezer</h1>
     
-    <p>
+    <!--<p>
       Para que salgan los resultados debes entrar en
       <a href="https://cors-anywhere.herokuapp.com/corsdemo">https://cors-anywhere.herokuapp.com/corsdemo</a>
-    </p>
+    </p> -->
 
     <!-- Componente de búsqueda -->
     <SearchBar @search="searchDeezer" />
@@ -129,9 +129,13 @@ const searchDeezer = async (query) => {
     return;
   }
 
-  const songUrl = `http://localhost:8080/https://api.deezer.com/search?q=${encodeURIComponent(query)}`;
+  /*const songUrl = `http://localhost:8080/https://api.deezer.com/search?q=${encodeURIComponent(query)}`;
   const albumUrl = `http://localhost:8080/https://api.deezer.com/search/album?q=${encodeURIComponent(query)}`;
-  const artistUrl = `http://localhost:8080/https://api.deezer.com/search/artist?q=${encodeURIComponent(query)}`;
+  const artistUrl = `http://localhost:8080/https://api.deezer.com/search/artist?q=${encodeURIComponent(query)}`;*/
+
+  let songUrl = `https://cors-anywhere.herokuapp.com/https://api.deezer.com/search?q=${encodeURIComponent(query)}`;
+  let albumUrl = `https://cors-anywhere.herokuapp.com/https://api.deezer.com/search/album?q=${encodeURIComponent(query)}`;
+  let artistUrl = `https://cors-anywhere.herokuapp.com/https://api.deezer.com/search/artist?q=${encodeURIComponent(query)}`;
 
   try {
     const [songResponse, albumResponse, artistResponse] = await Promise.all([

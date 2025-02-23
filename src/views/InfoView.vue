@@ -20,8 +20,8 @@
   const route = useRoute();
   
   // Detecta el tipo de elemento a mostrar (song, album o artist)
-  const type = computed(() => route.params.type);
-  const id = computed(() => route.params.id);
+  const type = computed(() => route.params.type || "unknown");
+  const id = computed(() => route.params.id || "unknown");
   </script>
   
   <style scoped>

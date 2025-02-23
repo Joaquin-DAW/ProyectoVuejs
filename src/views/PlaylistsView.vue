@@ -3,8 +3,8 @@
     <h1>Playlists</h1>
     <p>Gestiona tus playlists aquí.</p>
 
-    <!-- Integración de PlaylistManager -->
-    <PlaylistManager />
+    <!-- Componente PlaylistManager -->
+    <PlaylistManager @play="$emit('play', $event)" />
     
   </div>
 </template>
@@ -13,6 +13,8 @@
 import { computed } from 'vue';
 import PlaylistManager from '../components/PlaylistManager.vue';
 import { useFavoritesStore } from "../stores/favorites";
+
+defineEmits(["play"]);  // Declarar el evento "play"
 
 const favoritesStore = useFavoritesStore();
 const favorites = computed(() => favoritesStore.favorites);

@@ -36,33 +36,34 @@
             <button @click="logout" class="btn btn-danger btn-sm">Logout</button>
           </template>
           <template v-else>
-            <button @click="login" class="btn btn-primary btn-sm">Iniciar sesión</button>
+            <button @click="showModal = true" class="btn btn-primary btn-sm">Iniciar sesión</button>
           </template>
         </div>
       </div>
     </div>
+    <!-- Modal de bienvenida -->
+  <WelcomeModal v-if="showModal" @userRegistered="handleUserRegistered" />
   </nav>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { RouterLink } from 'vue-router'
+import { ref, onMounted } from "vue";
+import WelcomeModal from "@/components/WelcomeModal.vue"; // Importar el modal
 
-// Simulación de usuario logueado (esto podría venir de Vuex, Pinia o Firebase)
 const user = ref(null);
+const showModal = ref(false); // Controla la visibilidad del modal
 
-// **Simulación de login/logout con localStorage**
-const login = () => {
-  user.value = {
-    name: "Jane Doe",
-    avatar: "https://i.pravatar.cc/40"
-  };
-  localStorage.setItem("user", JSON.stringify(user.value));
+// **Manejar el registro de usuario desde el modal**
+const handleUserRegistered = (newUser) => {
+  user.value = newUser;
+  localStorage.setItem("user", JSON.stringify(newUser));
+  showModal.value = false; // Ocultar modal después de registrar
 };
 
+// **Cerrar sesión**
 const logout = () => {
-  console.log("Cerrando sesión...")
-  user.value = null // Aquí pondrías la lógica real de logout
+  console.log("Cerrando sesión...");
+  user.value = null;
   localStorage.removeItem("user");
 };
 
@@ -76,10 +77,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.navbar-brand {
-  font-weight: bold;
-}
-
 .user-section {
   display: flex;
   align-items: center;

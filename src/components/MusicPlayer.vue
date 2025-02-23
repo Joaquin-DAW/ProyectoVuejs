@@ -3,7 +3,7 @@
     <!-- Información de la canción -->
     <div class="song-info">
       <img :src="currentSong.album.cover_medium" alt="Portada" class="album-cover" />
-      <div>
+      <div class="song-details">
         <h3>{{ currentSong.title }}</h3>
         <p>{{ currentSong.artist.name }}</p>
       </div>
@@ -11,26 +11,30 @@
 
     <!-- Controles de reproducción -->
     <div class="controls">
-      <button @click="togglePlay">
+      <button @click="togglePlay" class="play-btn">
         <i :class="isPlaying ? 'bi bi-pause-fill' : 'bi bi-play-fill'"></i>
       </button>
-      <input 
-        type="range" 
-        min="0" 
-        :max="duration || 1" 
-        v-model="currentTime" 
-        @input="seek"
-      />
-      <span>{{ formatTime(currentTime) }} / {{ formatTime(duration) }}</span>
+
+      <div class="progress-container">
+        <span>{{ formatTime(currentTime) }}</span>
+        <input 
+          type="range" 
+          min="0" 
+          :max="duration" 
+          v-model="currentTime" 
+          @input="seek"
+        />
+        <span>{{ formatTime(duration) }}</span>
+      </div>
     </div>
 
-    <!-- Elemento de audio oculto (nocontrols) -->
+    <!-- Elemento de audio -->
     <audio ref="audio" @timeupdate="updateTime" @ended="nextSong" @loadedmetadata="loadMetadata"></audio>
   </div>
 </template>
 
 <script setup>
-import { ref, watch } from "vue";
+import { ref, watch, onMounted, nextTick } from "vue";
 
 const props = defineProps(["currentSong"]);
 const emit = defineEmits(["next"]);
@@ -40,7 +44,7 @@ const isPlaying = ref(false);
 const currentTime = ref(0);
 const duration = ref(0);
 
-// **Reproducir o pausar la canción con botón externo**
+// **Reproducir o pausar la canción**
 const togglePlay = () => {
   if (!audio.value) return;
   if (isPlaying.value) {
@@ -51,7 +55,7 @@ const togglePlay = () => {
   isPlaying.value = !isPlaying.value;
 };
 
-// **Actualizar la barra de progreso y el tiempo actual**
+// **Actualizar la barra de progreso**
 const updateTime = () => {
   if (!audio.value) return;
   currentTime.value = audio.value.currentTime;
@@ -76,16 +80,38 @@ const formatTime = (seconds) => {
   return `${min}:${sec}`;
 };
 
-// **Detectar cambio de canción y cargar la preview**
-watch(() => props.currentSong, (newSong) => {
-  if (!newSong || !audio.value) return;
+// **Reproducir automáticamente cuando cambia la canción**
+watch(() => props.currentSong, async (newSong) => {
+  if (!newSong) return;
+
+  await nextTick();
+  if (!audio.value) return;
+
   audio.value.src = newSong.preview;
   audio.value.load();
-  currentTime.value = 0;
-  isPlaying.value = false; // Evita reproducción automática
+
+  audio.value.play().then(() => {
+    isPlaying.value = true;
+  }).catch((error) => {
+    console.warn("El navegador bloqueó la reproducción automática:", error);
+  });
 });
 
-// **Emitir evento cuando termina la canción para avanzar a la siguiente**
+// **Reproducir la primera canción si ya existe al cargar**
+onMounted(async () => {
+  await nextTick();
+  if (props.currentSong && audio.value) {
+    audio.value.src = props.currentSong.preview;
+    audio.value.load();
+    audio.value.play().then(() => {
+      isPlaying.value = true;
+    }).catch((error) => {
+      console.warn("El navegador bloqueó la reproducción automática:", error);
+    });
+  }
+});
+
+// **Detectar fin de la canción y pasar a la siguiente**
 const nextSong = () => {
   isPlaying.value = false;
   emit("next");
@@ -99,47 +125,75 @@ const nextSong = () => {
   width: 100%;
   background: #222;
   color: white;
-  padding: 10px;
+  padding: 15px;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: space-between;
   box-shadow: 0 -2px 10px rgba(233, 152, 152, 0.5);
 }
 
+/* Información de la canción */
 .song-info {
   display: flex;
   align-items: center;
+  margin-bottom: 10px;
 }
 
 .album-cover {
-  width: 50px;
-  height: 50px;
-  margin-right: 10px;
+  width: 60px;
+  height: 60px;
   border-radius: 5px;
+  margin-right: 10px;
 }
 
+.song-details h3 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.song-details p {
+  margin: 0;
+  font-size: 14px;
+  color: #bbb;
+}
+
+/* Controles */
 .controls {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 10px;
+  width: 100%;
 }
 
-button {
+.play-btn {
   background: none;
   border: none;
   color: white;
-  font-size: 24px;
+  font-size: 28px;
   cursor: pointer;
+  margin-bottom: 5px;
+}
+
+/* Barra de progreso */
+.progress-container {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  max-width: 500px;
+  gap: 10px;
 }
 
 input[type="range"] {
-  width: 100px;
+  flex: 1;
   accent-color: #007bff;
+  height: 5px;
+  border-radius: 5px;
+  cursor: pointer;
 }
 
 span {
   font-size: 14px;
-  min-width: 80px;
-  text-align: right;
+  min-width: 40px;
+  text-align: center;
 }
 </style>

@@ -9,7 +9,7 @@
 
     <!-- Grid de canciones destacadas -->
     <div v-if="featuredSongs.length > 0" class="row mt-4">
-      <div class="col-md-4" v-for="song in featuredSongs.slice(0, 6)" :key="song.id">
+      <div class="col-md-4 mb-4" v-for="song in featuredSongs.slice(0, 6)" :key="song.id">
         <SongCard :song="song" @add-to-playlist="handleAddToPlaylist" />
       </div>
     </div>

@@ -68,7 +68,12 @@ onMounted(() => {
   flex: 1;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(135deg, #1e1e2f, #63a0d8)
+  background: linear-gradient(135deg, #3a4f3f, #805a65);
+}
+header {
+  background: linear-gradient(135deg, #ff007f, #00ff7f); // Rosa a verde
+  color: white; // Asegura que el texto siga siendo visible
+  padding: 1rem;
 }
 
 main {

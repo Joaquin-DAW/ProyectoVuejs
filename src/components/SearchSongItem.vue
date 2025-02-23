@@ -11,6 +11,11 @@
   
       <!-- Botón para reproducir -->
       <button @click="$emit('play', song)" class="btn btn-success">▶ Reproducir</button>
+
+       <!-- Botón para ver detalles -->
+        <router-link :to="{ name: 'InfoView', params: { type: 'song', id: song.id } }">
+          <button class="btn btn-info">Ver Detalle</button>
+        </router-link>
   
       <!-- Enlace para escuchar la canción completa -->
       <a :href="song.link" target="_blank" class="listen-link">🎧 Escuchar en Deezer</a>
@@ -65,6 +70,8 @@
   .search-song-item {
     display: flex;
     align-items: center;
+    justify-content: space-between;
+    width: 100%;
     gap: 15px;
     padding: 10px;
     border-radius: 8px;
